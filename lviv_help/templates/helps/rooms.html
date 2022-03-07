@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}
+| Нужно жилье
+{% endblock %}
+
+
+{% block content %}
+    
+<div class="row justify-content-center">
+
+
+<div class="col-10 mt-4">
+
+    <div class="col text-center h2 m-4">Заполните форму запроса на жилье во Львове</div>
+
+    <form action="" method="post">
+    <div class="row">
+
+      <div class="col-6 border">
+        <div class="form-group">
+          <label for="exampleFormControlTextarea1"><h4>Мои контакты</h4></label>
+          <textarea type="text" class="form-control" id="exampleDropdownFormEmail1" required="required" pattern="[A-Za-z0-9]{1,20}" placeholder="Егор, +380 99 999 99 99" name="contacts"></textarea>
+        </div>
+      </div>
+
+    <div class="col-2 border">
+      <div class="form-group">
+        <label for="exampleFormControlSelect1"><h4>Сколько человек</h4></label>
+        <select class="form-control" id="exampleFormControlSelect1" name="peoples_count">
+          <option>1</option>
+          <option>2</option>
+          <option>3</option>
+          <option>4</option>
+          <option>5</option>
+          <option>6</option>
+          <option>7</option>
+          <option>8</option>
+          <option>9</option>
+          <option>10</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="col border">
+      <div class="form-group">
+        <label for="exampleFormControlSelect2"><h4>Проездом/остаться</h4></label>
+        <select class="form-control" id="exampleFormControlSelect2" name="how_long_in_lviv">
+          <option><h4>Проездом, 1-2 дня</h4></option>
+          <option><h4>Неизвестно</h4></option>
+        </select>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary"><h4>Отправить заявку</h4></button>
+
+    </div>
+    </form>
+
+  <div class="col text-center h2 m-4">Заявки на жилье</div>
+ 
+
+{% for room_request in room_requests %}
+  {% if room_request.opened %}
+  <div class="row mt-4">
+
+    <div class="col border text-center"><h4>{{room_request.contacts}}</h4></div>
+    <div class="col border text-center"><h4>{{room_request.peoples_count}} чел.</h4></div>
+    <div class="col border text-center"><h4>{{room_request.how_long_in_lviv}}</h4></div>
+
+    <div class="col border text-center">
+      <form class="px-4 py-3" action="/del_room_request" method="post">
+        <input type="hidden" name="id" value="{{room_request.id}}" />
+        <button type="submit" class="btn btn-danger"><h4>Закрыть заявку</h4></button>
+      </form>
+    </div>
+
+  </div>
+  {% endif %}
+
+
+{% endfor %}
+</div>
+</div>
+
+
+{% endblock %}
