@@ -18,3 +18,15 @@ class RoomRequest(DeclarativeBase):
 
     def __repr__(self):
         return "".format(self.id)
+
+
+class SupplyRequest(DeclarativeBase):
+    __tablename__ = 'supply_requests'
+
+    id = Column(Integer, primary_key=True)
+    contacts = Column('contacts', String)
+    subject = Column('peoples_count', String)
+    opened = Column('days_in_room', Boolean, unique=False, default=True)
+
+    def __repr__(self):
+        return "".format(self.id)

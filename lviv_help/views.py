@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template, redirect, session, url_for
-from . models import engine, RoomRequest, DeclarativeBase
+from . models import engine, RoomRequest, SupplyRequest, DeclarativeBase
 from sqlalchemy.orm import sessionmaker
 # from . settings import logger
 
@@ -31,11 +31,45 @@ def need_room():
 
 
 @app.route("/del_room_request",  methods = ["post"])
-def del_request():
+def del_room_request():
     content = request.form
-    request_id = content.get("id")
+    room_request_id = content.get("id")
     db_session = Session()
-    room_request = db_session.query(RoomRequest).filter(RoomRequest.id == request_id).one()
+    room_request = db_session.query(RoomRequest).filter(RoomRequest.id == room_request_id).one()
     room_request.opened = False
     db_session.commit()
     return redirect(url_for("need_room"))
+
+
+@app.route("/supply",  methods = ["get", "post"])
+def need_supply():
+    if request.method == 'POST':
+        content = request.form    
+        new_supply_request = SupplyRequest(**content)
+        db_session = Session()
+        db_session.add(new_supply_request)
+        db_session.commit()
+        return redirect(url_for("need_supply"))
+    else:
+        try:
+            db_session = Session()
+            supply_requests_query = db_session.query(SupplyRequest).all()
+            supply_requests = [supply_request for supply_request in supply_requests_query]
+            return render_template('helps/supply.html', supply_requests=supply_requests)
+        except Exception as e:
+            error_message = "Something went wrong"
+            log_message = f"{error_message}: {e}"
+            print(log_message)
+            # logger.error(log_message)
+            return render_template('error_page.html',error_message=error_message)
+
+
+@app.route("/del_supply_request",  methods = ["post"])
+def del_supply_request():
+    content = request.form
+    supply_id = content.get("id")
+    db_session = Session()
+    supply_request = db_session.query(SupplyRequest).filter(SupplyRequest.id == supply_id).one()
+    supply_request.opened = False
+    db_session.commit()
+    return redirect(url_for("need_supply"))
