@@ -4,7 +4,8 @@ from sqlalchemy.engine.url import URL
 from . settings import dev_db_settings as db_settings
 
 DeclarativeBase = declarative_base()
-engine  = create_engine(URL.create(**db_settings))
+# engine  = create_engine(URL.create(**db_settings))
+engine = create_engine(f'postgresql://{db_settings.get("username")}:{db_settings.get("password")}@{db_settings.get("host")}:{db_settings.get("port")}/{db_settings.get("database")}') 
 
 
 class RoomRequest(DeclarativeBase):

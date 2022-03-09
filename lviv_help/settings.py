@@ -13,10 +13,11 @@ try:
 						"database": os.environ["DBNAME"],
 						"username": os.environ["USERNAME"],
 						"password": os.environ["PASSWORD"],
+						"port": os.environ["DB_PORT"],
 						"host": os.environ["HOST"]}
 
 except Exception as e:
-	raise Exception("File .env is not found")
+	raise Exception("problem with load setting: {e}")
 
 # #Logging setings
 # logger_settings_filename = "logging_config.json"

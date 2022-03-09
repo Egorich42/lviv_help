@@ -1,14 +1,12 @@
-click==8.0.1
-Flask==2.0.1
-greenlet==1.1.0
-importlib-metadata==4.6.1
-itsdangerous==2.0.1
-Jinja2==3.0.1
-MarkupSafe==2.0.1
-psycopg2-binary==2.9.1
-python-dotenv==0.18.0
-python-json-logger==2.0.1
-SQLAlchemy==1.4.20
-typing-extensions==3.10.0.0
-Werkzeug==2.0.1
-zipp==3.5.0
+click==8.0.4
+flask==2.0.3
+greenlet==1.1.2; python_version >= '3' and (platform_machine == 'aarch64' or (platform_machine == 'ppc64le' or (platform_machine == 'x86_64' or (platform_machine == 'amd64' or (platform_machine == 'AMD64' or (platform_machine == 'win32' or platform_machine == 'WIN32'))))))
+gunicorn==20.1.0
+itsdangerous==2.1.0
+jinja2==3.0.3
+markupsafe==2.1.0
+psycopg2-binary==2.9.3
+python-dotenv==0.19.2
+python-json-logger==2.0.2
+sqlalchemy==1.4.32
+werkzeug==2.0.3

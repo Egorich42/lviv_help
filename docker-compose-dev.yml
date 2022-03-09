@@ -6,10 +6,10 @@ services:
     restart: always
     image: postgres:latest
     env_file:
-      - .env
+      - dev_env
     volumes: 
       - db:/var/lib/postgresql/data
-      - ./init_prod.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./init_dev.sql:/docker-entrypoint-initdb.d/init.sql
 
   app:
     build: .
@@ -22,14 +22,13 @@ services:
       - dev_env
     links:
         - database:database
-    command: gunicorn -w 4 --threads 4 --bind :4999 run:app
 
   nginx:
     image: "nginx:1.13.5"
     ports:
-      - "80:80"
+      - "85:85"
     volumes:
-      - ./nginx_conf:/etc/nginx/conf.d
+      - ./nginx_conf_dev:/etc/nginx/conf.d
     depends_on: 
       - app
 
