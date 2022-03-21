@@ -1,18 +1,24 @@
 from flask import Flask, request, render_template, redirect, session, url_for
 from . models import engine, RoomRequest, SupplyRequest, DeclarativeBase
 from sqlalchemy.orm import sessionmaker
+from datetime import datetime
 # from . settings import logger
 
 DeclarativeBase.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 app = Flask(__name__, template_folder='templates')
 
+def get_timestamp():
+    now = datetime.now()
+    timestamp = now.strftime("%m/%d/%Y, %H:%M")
+    return timestamp
 
 @app.route("/",  methods = ["get", "post"])
 def need_room():
     if request.method == 'POST':
         content = request.form    
         new_room_request = RoomRequest(**content)
+        new_room_request.timestamp = get_timestamp() 
         db_session = Session()
         db_session.add(new_room_request)
         db_session.commit()
@@ -46,6 +52,7 @@ def need_supply():
     if request.method == 'POST':
         content = request.form    
         new_supply_request = SupplyRequest(**content)
+        new_supply_request.timestamp = get_timestamp() 
         db_session = Session()
         db_session.add(new_supply_request)
         db_session.commit()

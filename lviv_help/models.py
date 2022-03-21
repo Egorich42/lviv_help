@@ -13,6 +13,7 @@ class RoomRequest(DeclarativeBase):
 
     id = Column(Integer, primary_key=True)
     contacts = Column('contacts', String)
+    timestamp = Column('timestamp', String)
     peoples_count = Column('peoples_count', Integer)
     how_long_in_lviv = Column('how_long_in_lviv', String)
     opened = Column('days_in_room', Boolean, unique=False, default=True)
@@ -25,6 +26,7 @@ class SupplyRequest(DeclarativeBase):
     __tablename__ = 'supply_requests'
 
     id = Column(Integer, primary_key=True)
+    timestamp = Column('timestamp', String)
     contacts = Column('contacts', String)
     subject = Column('peoples_count', String)
     opened = Column('days_in_room', Boolean, unique=False, default=True)
