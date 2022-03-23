@@ -44,13 +44,13 @@
   {% if supply_request.opened %}
   <div class="row mt-4">
 
-    <div class="col border text-center"><h4>{{supply_request.contacts}}</h4></div>
-    <div class="col border text-center"><h4>{{supply_request.subject}}</h4></div>
-    <div class="col border text-center"><h4>{{supply_request.timestamp}}</h4></div>
+    <div class="col border text-center"><h4>{{supply_request.contacts | e}}</h4></div>
+    <div class="col border text-center"><h4>{{supply_request.subject | e}}</h4></div>
+    <div class="col border text-center"><h4>{{supply_request.timestamp | e}}</h4></div>
 
     <div class="col border text-center">
       <form class="px-4 py-3" action="/del_supply_request" method="post">
-        <input type="hidden" name="id" value="{{supply_request.id}}" />
+        <input type="hidden" name="id" value="{{supply_request.id | e}}" />
         <button type="submit" class="btn btn-danger"><h4>Закрыть заявку</h4></button>
       </form>
     </div>

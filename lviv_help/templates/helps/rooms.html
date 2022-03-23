@@ -64,14 +64,14 @@
   {% if room_request.opened %}
   <div class="row mt-4">
 
-    <div class="col border text-center"><h4>{{room_request.contacts}}</h4></div>
-    <div class="col border text-center"><h4>{{room_request.peoples_count}} чел.</h4></div>
-    <div class="col border text-center"><h4>{{room_request.how_long_in_lviv}}</h4></div>
-    <div class="col border text-center"><h4>{{room_request.timestamp}}</h4></div>
+    <div class="col border text-center"><h4>{{room_request.contacts | e}}</h4></div>
+    <div class="col border text-center"><h4>{{room_request.peoples_count | e}} чел.</h4></div>
+    <div class="col border text-center"><h4>{{room_request.how_long_in_lviv | e}}</h4></div>
+    <div class="col border text-center"><h4>{{room_request.timestamp | e}}</h4></div>
 
     <div class="col border text-center">
       <form class="px-4 py-3" action="/del_room_request" method="post">
-        <input type="hidden" name="id" value="{{room_request.id}}" />
+        <input type="hidden" name="id" value="{{room_request.id | e}}" />
         <button type="submit" class="btn btn-danger"><h4>Закрыть заявку</h4></button>
       </form>
     </div>
