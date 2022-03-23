@@ -1,4 +1,4 @@
-CREATE DATABASE hotel_grand_budapesht;
-CREATE USER user_pluser WITH PASSWORD 'baeburtak567';
-GRANT ALL PRIVILEGES ON DATABASE dev_hotel_grand_budapesht TO user_pluser;
+CREATE DATABASE your_database_name_here;
+CREATE USER your_user_name WITH PASSWORD 'SET YOUR PASSWORD HERE';
+GRANT ALL PRIVILEGES ON DATABASE your_database_name_here TO your_user_name;
 
