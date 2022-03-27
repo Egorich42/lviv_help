@@ -45,46 +45,30 @@ def need_room():
             'opened': True
         })
 
-        session = sql_db.Session()
         try:
-            session.add(new_room_request)
-            session.commit()
-        except SQLAlchemyError as e:
-            log.warning(f'Database error setting package: {e}')
-            session.rollback()
-        finally:
-            session.close()
-
+            sql_db.set_room_request(new_room_request)
+        except DatabaseError as e:
+            log.warning(str(e))
         return redirect(url_for("need_room"))
 
-    session = sql_db.Session()
-    try:
-        room_requests = session.query(RoomRequest).all()
-        return render_template('helps/rooms.html', room_requests=room_requests)
-    except SQLAlchemyError as e:
-        log.warning(f'Database error setting package: {e}')
-        return render_template('error_page.html', error_message='Something went wrong')
-    finally:
-        session.close()
+    if request.method == 'GET':
+        try:
+            number_of_requests = sql_db.get_number_of_requests(RoomRequest)
+            room_requests = sql_db.get_room_requests()
+            return render_template('helps/rooms.html', room_requests=room_requests, number_of_requests=number_of_requests)
+        except DatabaseError as e:
+            log.warning(str(e))
+            return render_template('error_page.html', error_message='Something went wrong')
 
 
 @app.route('/del_room_request', methods=['POST'])
 def del_room_request():
-    content = request.form
-    room_request_id = content.get('id', None)
-
-    if room_request_id:
-        session = sql_db.Session()
+    if room_request_id := request.form.get('id', None):
         try:
-            room_request = session.query(RoomRequest).filter(RoomRequest.id == room_request_id).one()
-            room_request.opened = False
-            session.commit()
-        except SQLAlchemyError as e:
-            log.warning(f'Database error setting package: {e}')
-            session.rollback()
-        finally:
-            session.close()
-        log.info(f'Room request {room_request_id} closed')
+            sql_db.remove_room_request(room_request_id)
+            log.info(f'Room request {room_request_id} closed')
+        except DatabaseError as e:
+            log.warning(str(e))
     return redirect(url_for("need_room"))
 
 
@@ -92,44 +76,34 @@ def del_room_request():
 def need_supply():
     if request.method == 'POST':
         new_supply_request = SupplyRequest(**{
-            'contacts': sanitize(request.form.get('contacts', '')),
-            'peoples_count': sanitize(request.form.get('peoples_count', '0')),
+            'contacts': sanitize(request.form.get('contacts', '')),  # application's contact (Elena, +7XXX...)
+            'subject': sanitize(request.form.get('subject', '')),    # application's comment
             'timestamp': get_timestamp()
         })
 
-        session = sql_db.Session()
         try:
-            session.add(new_supply_request)
-            session.commit()
-        except SQLAlchemyError as e:
-            log.warning(f'Database error setting package: {e}')
-            session.rollback()
-        finally:
-            session.close()
+            sql_db.set_supply_request(new_supply_request)
+        except DatabaseError as e:
+            log.warning(str(e))
         return redirect(url_for("need_supply"))
 
-    session = sql_db.Session()
-    try:
-        supply_requests = session.query(SupplyRequest).all()
-        return render_template('helps/supply.html', supply_requests=supply_requests)
-    except SQLAlchemyError as e:
-        log.warning("Database error setting package: %s", e)
-    finally:
-        session.close()
+    if request.method == 'GET':
+        try:
+            number_of_requests = sql_db.get_number_of_requests(SupplyRequest)
+            supply_requests = sql_db.get_supply_requests()
+            return render_template('helps/supply.html',
+                                   supply_requests=supply_requests,
+                                   number_of_requests=number_of_requests)
+        except DatabaseError as e:
+            log.warning(str(e))
 
 
 @app.route('/del_supply_request', methods=["POST"])
 def del_supply_request():
-    supply_request_id = request.form.get('id', None)
-    if supply_request_id:
-        session = sql_db.Session()
+    if supply_request_id := request.form.get('id', None):
         try:
-            supply_request = session.query(SupplyRequest).filter(SupplyRequest.id == supply_request_id).one()
-            supply_request.opened = False
-            session.commit()
-        except SQLAlchemyError as e:
-            log.warning(f'Database error setting package: {e}')
-        finally:
-            session.close()
-        log.info(f'Supply request {supply_request_id} closed')
+            sql_db.remove_supply_request(supply_request_id)
+            log.info(f'Supply request {supply_request_id} closed')
+        except DatabaseError as e:
+            log.warning(str(e))
     return redirect(url_for("need_supply"))

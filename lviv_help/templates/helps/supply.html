@@ -1,67 +1,69 @@
 {% extends "base.html" %}
 
 {% block title %}
-| Нужна помощь
+    | Нужна помощь
 {% endblock %}
 
 
 {% block content %}
-    
-<div class="row justify-content-center">
+
+    <div class="row justify-content-center">
 
 
-<div class="col-10 mt-4">
+        <div class="col-10 mt-4">
 
-    <div class="col text-center h2 m-4">Заполните форму запроса на жилье во Львове</div>
+            <div class="col text-center h2 m-4">Заполните форму запроса на жилье во Львове</div>
 
-    <form action="" method="post">
-    <div class="row">
+            <form action="" method="post">
+                <div class="row">
 
-      <div class="col-6 border">
-        <div class="form-group">
-          <label for="exampleFormControlTextarea1"><h4>Мои контакты</h4></label>
-          <textarea type="text" class="form-control" id="exampleDropdownFormEmail1" required="required" pattern="[A-Za-z0-9]{1,20}" placeholder="Олена, Телеграм @olfr43" name="contacts"></textarea>
+                    <div class="col-6 border">
+                        <div class="form-group">
+                            <label for="exampleFormControlTextarea1"><h4>Мои контакты</h4></label>
+                            <textarea type="text" class="form-control" id="exampleDropdownFormEmail1"
+                                      required="required" pattern="[A-Za-z0-9]{1,20}"
+                                      placeholder="Олена, Телеграм @olfr43" name="contacts"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="col-6 border">
+                        <div class="form-group">
+                            <label for="exampleFormControlTextarea1"><h4>Какая мне нужна помощь</h4></label>
+                            <textarea type="text" class="form-control" id="exampleDropdownFormEmail1"
+                                      required="required" pattern="[A-Za-z0-9]{1,20}"
+                                      placeholder="Нужно 150 гривен на телефон +380 50 999 99 99, карточка заблокирована"
+                                      name="subject"></textarea>
+                        </div>
+                    </div>
+
+
+                    <button type="submit" class="btn btn-primary"><h4>Отправить заявку</h4></button>
+
+                </div>
+            </form>
+
+            <div class="col text-center h2 m-4">Заявки на помощь</div>
+
+            <div>Количество заявок: {{ number_of_requests }}</div>
+
+            {% for supply_request in supply_requests %}
+                <div class="row mt-4">
+
+                    <div class="col border text-center"><h4>{{ supply_request.contacts | e }}</h4></div>
+                    <div class="col border text-center"><h4>{{ supply_request.subject | e }}</h4></div>
+                    <div class="col border text-center"><h4>{{ supply_request.timestamp | e }}</h4></div>
+
+                    <div class="col border text-center">
+                        <form class="px-4 py-3" action="/del_supply_request" method="post">
+                            <input type="hidden" name="id" value="{{ supply_request.id | e }}"/>
+                            <button type="submit" class="btn btn-danger"><h4>Закрыть заявку</h4></button>
+                        </form>
+                    </div>
+
+                </div>
+            {% endfor %}
         </div>
-      </div>
-
-      <div class="col-6 border">
-        <div class="form-group">
-          <label for="exampleFormControlTextarea1"><h4>Какая мне нужна помощь</h4></label>
-          <textarea type="text" class="form-control" id="exampleDropdownFormEmail1" required="required" pattern="[A-Za-z0-9]{1,20}" placeholder="Нужно 150 гривен на телефон +380 50 999 99 99, карточка заблокирована" name="subject"></textarea>
-        </div>
-      </div>
-
-
-    <button type="submit" class="btn btn-primary"><h4>Отправить заявку</h4></button>
-
     </div>
-    </form>
-
-  <div class="col text-center h2 m-4">Заявки на помощь</div>
- 
-
-{% for supply_request in supply_requests %}
-  {% if supply_request.opened %}
-  <div class="row mt-4">
-
-    <div class="col border text-center"><h4>{{supply_request.contacts | e}}</h4></div>
-    <div class="col border text-center"><h4>{{supply_request.subject | e}}</h4></div>
-    <div class="col border text-center"><h4>{{supply_request.timestamp | e}}</h4></div>
-
-    <div class="col border text-center">
-      <form class="px-4 py-3" action="/del_supply_request" method="post">
-        <input type="hidden" name="id" value="{{supply_request.id | e}}" />
-        <button type="submit" class="btn btn-danger"><h4>Закрыть заявку</h4></button>
-      </form>
-    </div>
-
-  </div>
-  {% endif %}
-
-
-{% endfor %}
-</div>
-</div>
 
 
 {% endblock %}
