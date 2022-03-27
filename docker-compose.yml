@@ -2,34 +2,37 @@ version: '3.4'
 
 services:
   database:
-    container_name: database
+    container_name: database-prod
     restart: always
     image: bitnami/postgresql:11.15.0
     env_file:
-      - dev_env
-    ports:
-      - "5433:5432"
+      - .env
     volumes:
-      - db:/var/lib/postgresql/data
-      - ./init_dev.sql:/docker-entrypoint-initdb.d/init.sql
+      - db:/bitnami/postgresql
+      - ./init_prod.sql:/docker-entrypoint-initdb.d/init.sql
 
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: dockerfile-prod
+
     restart: always
+    ports:
+      - "5432:5432"
     depends_on:
       - database
-    links:
-      - database:database
     env_file:
-      - dev_env
-    command: gunicorn -w 4 --threads 4 --bind :4998 run:app
+      - .env
+    links:
+        - database:database
+    command: gunicorn -w 4 --threads 4 --bind :4999 run:app
 
   nginx:
     image: "nginx:1.13.5"
     ports:
-      - "85:85"
+      - "80:80"
     volumes:
-      - ./nginx_conf_dev:/etc/nginx/conf.d
+      - ./nginx_conf:/etc/nginx/conf.d
     depends_on:
       - app
 
