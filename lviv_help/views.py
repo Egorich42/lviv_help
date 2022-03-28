@@ -37,10 +37,22 @@ def sanitize(s):
 @app.route('/', methods=['GET', 'POST'])
 def need_room():
     if request.method == 'POST':
+        contacts = sanitize(request.form.get('contacts', ''))
+        how_long_in_lviv = sanitize(request.form.get('how_long_in_lviv', ''))
+        peoples_count = sanitize(request.form.get('peoples_count', 0))
+
+        if not contacts or not how_long_in_lviv or not peoples_count:
+            log.info("Bad request, aborting...")
+            return redirect(url_for("need_room"))
+
+        if len(contacts) < 4:
+            log.info("Bad request, aborting...")
+            return redirect(url_for("need_room"))
+
         new_room_request = RoomRequest(**{
-            'contacts': sanitize(request.form.get('contacts', '')),
-            'how_long_in_lviv': sanitize(request.form.get('how_long_in_lviv', '')),
-            'peoples_count': sanitize(request.form.get('peoples_count', '0')),
+            'contacts': contacts,
+            'how_long_in_lviv': how_long_in_lviv,
+            'peoples_count': peoples_count,
             'timestamp': get_timestamp(),
             'opened': True
         })
@@ -51,7 +63,7 @@ def need_room():
             log.warning(str(e))
         return redirect(url_for("need_room"))
 
-    if request.method == 'GET':
+    else:
         try:
             number_of_requests = sql_db.get_number_of_requests(RoomRequest)
             room_requests = sql_db.get_room_requests()
@@ -75,9 +87,20 @@ def del_room_request():
 @app.route('/supply', methods=['GET', 'POST'])
 def need_supply():
     if request.method == 'POST':
+        contacts = sanitize(request.form.get('contacts', ''))
+        subject = sanitize(request.form.get('subject', ''))
+
+        if not contacts or not subject:
+            log.info("Bad request, aborting...")
+            return redirect(url_for("need_supply"))
+
+        if len(contacts) < 4 or len(subject) < 4:
+            log.info("Bad request, aborting...")
+            return redirect(url_for("need_supply"))
+
         new_supply_request = SupplyRequest(**{
-            'contacts': sanitize(request.form.get('contacts', '')),  # application's contact (Elena, +7XXX...)
-            'subject': sanitize(request.form.get('subject', '')),    # application's comment
+            'contacts': contacts,  # application's contact (Elena, +7XXX...)
+            'subject': subject,    # application's comment
             'timestamp': get_timestamp()
         })
 
@@ -87,7 +110,7 @@ def need_supply():
             log.warning(str(e))
         return redirect(url_for("need_supply"))
 
-    if request.method == 'GET':
+    else:
         try:
             number_of_requests = sql_db.get_number_of_requests(SupplyRequest)
             supply_requests = sql_db.get_supply_requests()
