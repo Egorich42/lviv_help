@@ -1,82 +1,132 @@
-from flask import Flask, request, render_template, redirect, session, url_for
-from . models import engine, RoomRequest, SupplyRequest, DeclarativeBase
-from sqlalchemy.orm import sessionmaker
+import os
+import html
 from datetime import datetime
-# from . settings import logger
+from flask import Flask, request, render_template, redirect, url_for
+from sqlalchemy.exc import SQLAlchemyError
+from .db import RoomRequest, SupplyRequest, DeclarativeBase, DatabaseError, Database
+from .settings import create_logger
 
-DeclarativeBase.metadata.create_all(engine)
-Session = sessionmaker(bind=engine)
+log = create_logger(__name__)
+
+conn_str = os.environ.get('POSTGRES_URL', '')
+
+try:
+    sql_db = Database(conn_str)
+    DeclarativeBase.metadata.create_all(sql_db.engine)
+    log.info('Connection to the database have done successfully')
+except KeyError:
+    log.error('No database env variables')
+    exit(1)
+except DatabaseError as e:
+    log.error(str(e))
+    exit(1)
+
 app = Flask(__name__, template_folder='templates')
 
-def get_timestamp():
-    now = datetime.now()
-    timestamp = now.strftime("%m/%d/%Y, %H:%M")
-    return timestamp
 
-@app.route("/",  methods = ["get", "post"])
+def get_timestamp():
+    return datetime.now().strftime("%m/%d/%Y, %H:%M")
+
+
+def sanitize(s):
+    if not isinstance(s, str):
+        s = str(s)
+    return html.escape(s)
+
+
+@app.route('/', methods=['GET', 'POST'])
 def need_room():
     if request.method == 'POST':
-        content = request.form    
-        new_room_request = RoomRequest(**content)
-        new_room_request.timestamp = get_timestamp() 
-        db_session = Session()
-        db_session.add(new_room_request)
-        db_session.commit()
+        contacts = sanitize(request.form.get('contacts', ''))
+        how_long_in_lviv = sanitize(request.form.get('how_long_in_lviv', ''))
+        peoples_count = sanitize(request.form.get('peoples_count', 0))
+
+        if not contacts or not how_long_in_lviv or not peoples_count:
+            log.info("Bad request, aborting...")
+            return redirect(url_for("need_room"))
+
+        if len(contacts) < 4:
+            log.info("Bad request, aborting...")
+            return redirect(url_for("need_room"))
+
+        new_room_request = RoomRequest(**{
+            'contacts': contacts,
+            'how_long_in_lviv': how_long_in_lviv,
+            'peoples_count': peoples_count,
+            'timestamp': get_timestamp(),
+            'opened': True
+        })
+
+        try:
+            sql_db.set_room_request(new_room_request)
+        except DatabaseError as e:
+            log.warning(str(e))
         return redirect(url_for("need_room"))
+
     else:
         try:
-            db_session = Session()
-            room_requests_query = db_session.query(RoomRequest).all()
-            room_requests = [room_request for room_request in room_requests_query]
-            return render_template('helps/rooms.html', room_requests=room_requests)
-        except Exception as e:
-            error_message = "Something went wrong"
-            log_message = f"{error_message}: {e}"
-            # logger.error(log_message)
-            return render_template('error_page.html',error_message=error_message)
+            number_of_requests = sql_db.get_number_of_requests(RoomRequest)
+            room_requests = sql_db.get_room_requests()
+            return render_template('helps/rooms.html', room_requests=room_requests, number_of_requests=number_of_requests)
+        except DatabaseError as e:
+            log.warning(str(e))
+            return render_template('error_page.html', error_message='Something went wrong')
 
 
-@app.route("/del_room_request",  methods = ["post"])
+@app.route('/del_room_request', methods=['POST'])
 def del_room_request():
-    content = request.form
-    room_request_id = content.get("id")
-    db_session = Session()
-    room_request = db_session.query(RoomRequest).filter(RoomRequest.id == room_request_id).one()
-    room_request.opened = False
-    db_session.commit()
+    if room_request_id := request.form.get('id', None):
+        try:
+            sql_db.remove_room_request(room_request_id)
+            log.info(f'Room request {room_request_id} closed')
+        except DatabaseError as e:
+            log.warning(str(e))
     return redirect(url_for("need_room"))
 
 
-@app.route("/supply",  methods = ["get", "post"])
+@app.route('/supply', methods=['GET', 'POST'])
 def need_supply():
     if request.method == 'POST':
-        content = request.form    
-        new_supply_request = SupplyRequest(**content)
-        new_supply_request.timestamp = get_timestamp() 
-        db_session = Session()
-        db_session.add(new_supply_request)
-        db_session.commit()
+        contacts = sanitize(request.form.get('contacts', ''))
+        subject = sanitize(request.form.get('subject', ''))
+
+        if not contacts or not subject:
+            log.info("Bad request, aborting...")
+            return redirect(url_for("need_supply"))
+
+        if len(contacts) < 4 or len(subject) < 4:
+            log.info("Bad request, aborting...")
+            return redirect(url_for("need_supply"))
+
+        new_supply_request = SupplyRequest(**{
+            'contacts': contacts,  # application's contact (Elena, +7XXX...)
+            'subject': subject,    # application's comment
+            'timestamp': get_timestamp()
+        })
+
+        try:
+            sql_db.set_supply_request(new_supply_request)
+        except DatabaseError as e:
+            log.warning(str(e))
         return redirect(url_for("need_supply"))
+
     else:
         try:
-            db_session = Session()
-            supply_requests_query = db_session.query(SupplyRequest).all()
-            supply_requests = [supply_request for supply_request in supply_requests_query]
-            return render_template('helps/supply.html', supply_requests=supply_requests)
-        except Exception as e:
-            error_message = "Something went wrong"
-            log_message = f"{error_message}: {e}"
-            print(log_message)
-            # logger.error(log_message)
-            return render_template('error_page.html',error_message=error_message)
+            number_of_requests = sql_db.get_number_of_requests(SupplyRequest)
+            supply_requests = sql_db.get_supply_requests()
+            return render_template('helps/supply.html',
+                                   supply_requests=supply_requests,
+                                   number_of_requests=number_of_requests)
+        except DatabaseError as e:
+            log.warning(str(e))
 
 
-@app.route("/del_supply_request",  methods = ["post"])
+@app.route('/del_supply_request', methods=["POST"])
 def del_supply_request():
-    content = request.form
-    supply_id = content.get("id")
-    db_session = Session()
-    supply_request = db_session.query(SupplyRequest).filter(SupplyRequest.id == supply_id).one()
-    supply_request.opened = False
-    db_session.commit()
+    if supply_request_id := request.form.get('id', None):
+        try:
+            sql_db.remove_supply_request(supply_request_id)
+            log.info(f'Supply request {supply_request_id} closed')
+        except DatabaseError as e:
+            log.warning(str(e))
     return redirect(url_for("need_supply"))

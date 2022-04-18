@@ -20,7 +20,14 @@ python run.py
 
 ### How to run
 
-production:
+Before run:
+
+- Add your creds to `init_dev.sql`/`init_prof.sql`:
+  - username instead `your_user_name`
+  - database name instead `your_database_name_here`
+  - password instead of `SET YOUR PASSWORD HERE`
+
+Run production:
 ```
 docker-compose -f docker-compose-prod.yml up --build
 ```
